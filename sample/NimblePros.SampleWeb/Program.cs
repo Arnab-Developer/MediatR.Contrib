@@ -32,7 +32,7 @@ builder.Services.AddMediatR(cfg =>
 //builder.Services.AddValidatorsFromAssemblyContaining<AddItemToCartCommandValidator>();
 //builder.Services.AddScoped<IDomainEventDispatcher, MediatRDomainEventDispatcher>(); // domain events
 
-builder.Services.AddScoped<IValidator<CreateCustomerCommand>, CreateCustomerCommandValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateCustomerCommandValidator>();
 
 var app = builder.Build();
 
