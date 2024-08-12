@@ -1,5 +1,9 @@
-﻿using FastEndpoints;
-using System.Reflection;
+﻿using System.Reflection;
+using FastEndpoints;
+using FluentValidation;
+using NimblePros.MediatR.Contrib.Behaviors;
+using NimblePros.SampleWeb.Commands;
+using NimblePros.SampleWeb.Validators;
 using Serilog;
 
 var logger = Log.Logger = new LoggerConfiguration()
@@ -20,12 +24,16 @@ builder.Services.AddFastEndpoints();
 
 // Set up MediatR
 builder.Services.AddMediatR(cfg =>
-cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+{
+  cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+  cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
 //builder.Services.AddMediatRLoggingBehavior();
 //builder.Services.AddMediatRFluentValidationBehavior();
 //builder.Services.AddValidatorsFromAssemblyContaining<AddItemToCartCommandValidator>();
 //builder.Services.AddScoped<IDomainEventDispatcher, MediatRDomainEventDispatcher>(); // domain events
 
+builder.Services.AddScoped<IValidator<CreateCustomerCommand>, CreateCustomerCommandValidator>();
 
 var app = builder.Build();
 
