@@ -3,3 +3,5 @@
 GET {{NimblePros_SampleWeb_HostAddress}}/customer?Id=1&FirstName=Jon1&LastName=Doe1&Country=UK
 
 ###
+
+GET {{NimblePros_SampleWeb_HostAddress}}/customer

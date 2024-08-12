@@ -1,4 +1,5 @@
 ﻿using FastEndpoints;
+using FluentValidation;
 using MediatR;
 using NimblePros.SampleWeb.Commands;
 
@@ -26,9 +27,22 @@ public class Endpoint(IMediator mediator)
       Country = request.Country
     };
 
-    var createCustomerResponse = await _mediator
-      .Send(createCustomerCommand, cancellationToken)
-      .ConfigureAwait(false);
+    CreateCustomerResponse createCustomerResponse;
+
+    try
+    {
+      createCustomerResponse = await _mediator
+        .Send(createCustomerCommand, cancellationToken)
+        .ConfigureAwait(false);
+    }
+    catch (ValidationException ex)
+    {
+      createCustomerResponse = new CreateCustomerResponse()
+      {
+        NewCustomerId = 0,
+        Message = ex.Message
+      };
+    }
 
     await SendAsync(createCustomerResponse, cancellation: cancellationToken)
       .ConfigureAwait(false);
