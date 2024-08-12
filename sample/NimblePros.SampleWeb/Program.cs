@@ -3,7 +3,6 @@ using FastEndpoints;
 using FluentValidation;
 using NimblePros.MediatR.Contrib.Behaviors;
 using NimblePros.SampleWeb.Commands;
-using NimblePros.SampleWeb.Validators;
 using Serilog;
 
 var logger = Log.Logger = new LoggerConfiguration()

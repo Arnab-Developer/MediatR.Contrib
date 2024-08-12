@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
-using NimblePros.SampleWeb.Commands;
 
-namespace NimblePros.SampleWeb.Validators;
+namespace NimblePros.SampleWeb.Commands;
 
 public class CreateCustomerCommandValidator : AbstractValidator<CreateCustomerCommand>
 {
