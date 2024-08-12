@@ -1,6 +1,5 @@
-@NimblePros.SampleWeb_HostAddress = http://localhost:5173
+@NimblePros_SampleWeb_HostAddress = http://localhost:5173
 
-GET {{NimblePros.SampleWeb_HostAddress}}/weatherforecast/
-Accept: application/json
+GET {{NimblePros_SampleWeb_HostAddress}}/customer?Id=1&FirstName=Jon1&LastName=Doe1&Country=UK
 
 ###
