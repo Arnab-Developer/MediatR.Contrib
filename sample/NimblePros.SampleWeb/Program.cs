@@ -2,6 +2,7 @@
 using FastEndpoints;
 using FluentValidation;
 using NimblePros.MediatR.Contrib.Behaviors;
+using NimblePros.SampleWeb;
 using NimblePros.SampleWeb.Commands;
 using Serilog;
 
@@ -34,6 +35,9 @@ builder.Services.AddMediatR(cfg =>
 //builder.Services.AddScoped<IDomainEventDispatcher, MediatRDomainEventDispatcher>(); // domain events
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateCustomerCommandValidator>();
+
+var constr = builder.Configuration.GetConnectionString("Constr");
+builder.Services.AddSqlServer<CustomerContext>(constr);
 
 var app = builder.Build();
 
