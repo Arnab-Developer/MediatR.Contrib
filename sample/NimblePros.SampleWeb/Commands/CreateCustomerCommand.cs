@@ -1,9 +1,8 @@
 ﻿using NimblePros.MediatR.Contrib.Abstractions;
-using NimblePros.SampleWeb.Endpoints.CreateCustomerEndpoint;
 
 namespace NimblePros.SampleWeb.Commands;
 
-public class CreateCustomerCommand : ICommand<CreateCustomerResponse>
+public class CreateCustomerCommand : ICommand<int>
 {
   public string FirstName { get; set; } = string.Empty;
 

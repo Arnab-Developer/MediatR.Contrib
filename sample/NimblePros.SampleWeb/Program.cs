@@ -28,6 +28,7 @@ builder.Services.AddMediatR(cfg =>
   cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
   cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
   cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+  cfg.AddOpenBehavior(typeof(CachingBehavior<,>));
 });
 //builder.Services.AddMediatRLoggingBehavior();
 //builder.Services.AddMediatRFluentValidationBehavior();
@@ -35,6 +36,7 @@ builder.Services.AddMediatR(cfg =>
 //builder.Services.AddScoped<IDomainEventDispatcher, MediatRDomainEventDispatcher>(); // domain events
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateCustomerCommandValidator>();
+builder.Services.AddMemoryCache();
 
 var constr = builder.Configuration.GetConnectionString("Constr");
 builder.Services.AddSqlServer<CustomerContext>(constr);

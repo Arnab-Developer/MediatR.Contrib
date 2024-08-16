@@ -12,12 +12,11 @@ public class Endpoint(IMediator mediator)
 
   public override void Configure()
   {
-    Get("/customer");
+    Get("/create-customer");
     AllowAnonymous();
   }
 
-  public override async Task HandleAsync(
-    CreateCustomerRequest request,
+  public override async Task HandleAsync(CreateCustomerRequest request,
     CancellationToken cancellationToken)
   {
     var createCustomerCommand = new CreateCustomerCommand()
@@ -32,9 +31,14 @@ public class Endpoint(IMediator mediator)
 
     try
     {
-      createCustomerResponse = await _mediator
-        .Send(createCustomerCommand, cancellationToken)
+      var newCustomerId = await _mediator.Send(createCustomerCommand, cancellationToken)
         .ConfigureAwait(false);
+
+      createCustomerResponse = new CreateCustomerResponse()
+      {
+        NewCustomerId = newCustomerId,
+        Message = $"New customer created with name '{request.FirstName} {request.LastName}' from '{request.Country}'"
+      };
 
       statusCode = 200;
     }

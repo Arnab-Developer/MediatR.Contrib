@@ -1,7 +1,17 @@
 @NimblePros_SampleWeb_HostAddress = http://localhost:5173
 
-GET {{NimblePros_SampleWeb_HostAddress}}/customer?Id=1&FirstName=Jon1&LastName=Doe1&Country=UK
+###
+
+GET {{NimblePros_SampleWeb_HostAddress}}/get-customer
 
 ###
 
-GET {{NimblePros_SampleWeb_HostAddress}}/customer
+GET {{NimblePros_SampleWeb_HostAddress}}/get-customer?id=2
+
+###
+
+GET {{NimblePros_SampleWeb_HostAddress}}/create-customer
+
+###
+
+GET {{NimblePros_SampleWeb_HostAddress}}/create-customer?Id=1&FirstName=Jon1&LastName=Doe1&Country=UK
