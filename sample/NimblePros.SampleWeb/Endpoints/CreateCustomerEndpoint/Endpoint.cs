@@ -28,12 +28,15 @@ public class Endpoint(IMediator mediator)
     };
 
     CreateCustomerResponse createCustomerResponse;
+    int statusCode;
 
     try
     {
       createCustomerResponse = await _mediator
         .Send(createCustomerCommand, cancellationToken)
         .ConfigureAwait(false);
+
+      statusCode = 200;
     }
     catch (ValidationException ex)
     {
@@ -42,9 +45,11 @@ public class Endpoint(IMediator mediator)
         NewCustomerId = 0,
         Message = ex.Message
       };
+
+      statusCode = 400;
     }
 
-    await SendAsync(createCustomerResponse, cancellation: cancellationToken)
+    await SendAsync(createCustomerResponse, statusCode, cancellationToken)
       .ConfigureAwait(false);
   }
 }

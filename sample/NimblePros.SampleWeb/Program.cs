@@ -25,6 +25,7 @@ builder.Services.AddFastEndpoints();
 builder.Services.AddMediatR(cfg =>
 {
   cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+  cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
   cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 //builder.Services.AddMediatRLoggingBehavior();
