@@ -10,7 +10,10 @@ public class GetCustomerQueryHandler(CustomerContext context)
   public async Task<Customer> Handle(GetCustomerQuery request,
     CancellationToken cancellationToken)
   {
-    var customer = await _context.Customers.FirstAsync(c => c.Id == request.Id);
+    var customer = await _context.Customers
+      .FirstAsync(c => c.Id == request.Id, cancellationToken)
+      .ConfigureAwait(false);
+
     return customer;
   }
 }
