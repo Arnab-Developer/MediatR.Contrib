@@ -2,9 +2,9 @@
 using FluentValidation;
 using MediatR;
 
-namespace NimblePros.SampleWeb.Endpoints.CreateCustomerEndpoint;
+namespace NimblePros.SampleWeb.Endpoints;
 
-public class Endpoint(IMediator mediator)
+public class CreateCustomerEndpoint(IMediator mediator)
   : Endpoint<CreateCustomerRequest, CreateCustomerResponse>
 {
   private readonly IMediator _mediator = mediator;

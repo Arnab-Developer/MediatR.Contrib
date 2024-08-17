@@ -1,4 +1,4 @@
-﻿namespace NimblePros.SampleWeb.Endpoints.GetCustomerEndpoint;
+﻿namespace NimblePros.SampleWeb.Endpoints;
 
 public class GetCustomerResponse
 {
