@@ -1,6 +1,4 @@
-﻿using NimblePros.MediatR.Contrib.Abstractions;
-
-namespace NimblePros.SampleWeb.Commands;
+﻿namespace NimblePros.SampleWeb.Commands;
 
 public class CreateCustomerCommand : ICommand<int>
 {

@@ -1,7 +1,4 @@
-﻿using NimblePros.MediatR.Contrib.Abstractions;
-using NimblePros.SampleWeb.Models;
-
-namespace NimblePros.SampleWeb.Commands;
+﻿namespace NimblePros.SampleWeb.Commands;
 
 public class CreateCustomerCommandHandler(CustomerContext context)
   : ICommandHandler<CreateCustomerCommand, int>

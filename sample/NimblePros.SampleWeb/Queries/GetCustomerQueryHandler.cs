@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NimblePros.MediatR.Contrib.Abstractions;
-using NimblePros.SampleWeb.Models;
 
 namespace NimblePros.SampleWeb.Queries;
 

@@ -1,7 +1,6 @@
 ﻿using FastEndpoints;
 using FluentValidation;
 using MediatR;
-using NimblePros.SampleWeb.Commands;
 
 namespace NimblePros.SampleWeb.Endpoints.CreateCustomerEndpoint;
 

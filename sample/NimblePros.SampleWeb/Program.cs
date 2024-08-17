@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using FastEndpoints;
 using FluentValidation;
-using NimblePros.MediatR.Contrib.Behaviors;
 using NimblePros.SampleWeb;
 using NimblePros.SampleWeb.Commands;
 using Serilog;

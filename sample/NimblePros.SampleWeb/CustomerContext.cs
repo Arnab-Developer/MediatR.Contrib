@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NimblePros.SampleWeb.Models;
 
 namespace NimblePros.SampleWeb;
 

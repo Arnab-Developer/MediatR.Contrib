@@ -1,9 +1,6 @@
 ﻿using FastEndpoints;
 using FluentValidation;
 using MediatR;
-using Microsoft.AspNetCore.Http;
-using NimblePros.SampleWeb.Endpoints.CreateCustomerEndpoint;
-using NimblePros.SampleWeb.Queries;
 
 namespace NimblePros.SampleWeb.Endpoints.GetCustomerEndpoint;
 
