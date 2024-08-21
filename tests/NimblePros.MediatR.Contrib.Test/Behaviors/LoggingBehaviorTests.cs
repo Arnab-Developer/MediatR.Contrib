@@ -43,12 +43,13 @@ public class LoggingBehaviorTests
       .ReturnsAsync(await Task.FromResult(true));
 
     // Act
-    Task<bool> testCode() => loggingBehavior.Handle(command, nextMock.Object.Next,
-      CancellationToken.None);
+    var testCode = () =>
+      loggingBehavior.Handle(command, nextMock.Object.Next, CancellationToken.None);
 
     // Assert
-    var exception = await Assert.ThrowsAsync<ArgumentNullException>(testCode);
-    exception.Message.Should().Be("Value cannot be null. (Parameter 'request')");
+    await testCode
+      .Should().ThrowAsync<ArgumentNullException>()
+      .WithMessage("Value cannot be null. (Parameter 'request')");
 
     nextMock.Verify(m => m.Next(), Times.Never());
     nextMock.VerifyNoOtherCalls();

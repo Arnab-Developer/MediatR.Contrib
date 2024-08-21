@@ -115,11 +115,13 @@ public class CachingBehaviorTests
       .ReturnsAsync(await Task.FromResult(true));
 
     // Act
-    Task<bool> testCode() => cachingBehavior.Handle(command, nextMock.Object.Next, CancellationToken.None);
+    var testCode = () =>
+      cachingBehavior.Handle(command, nextMock.Object.Next, CancellationToken.None);
 
     // Assert
-    var exception = await Assert.ThrowsAsync<ArgumentNullException>(testCode);
-    exception.Message.Should().Be("Value cannot be null. (Parameter 'request')");
+    await testCode
+      .Should().ThrowAsync<ArgumentNullException>()
+      .WithMessage("Value cannot be null. (Parameter 'request')");
 
     memoryCacheMock.Verify(m => m.TryGetValue(cacheKey, out result), Times.Never());
     memoryCacheMock.Verify(m => m.CreateEntry(cacheKey), Times.Never());

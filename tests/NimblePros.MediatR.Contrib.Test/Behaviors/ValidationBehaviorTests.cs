@@ -43,15 +43,13 @@ public class ValidationBehaviorTests
       .ReturnsAsync(await Task.FromResult(true));
 
     // Act
-    Task<bool> testCode() => validationBehavior.Handle(command, nextMock.Object.Next,
-      CancellationToken.None);
+    var testCode = () =>
+      validationBehavior.Handle(command, nextMock.Object.Next, CancellationToken.None);
 
     // Assert
-    var exception = await Assert.ThrowsAsync<ValidationException>(testCode);
-
-    exception.Message
-      .Should()
-      .Be("Validation failed: \r\n -- Name: 'Name' must not be empty. Severity: Error");
+    await testCode
+      .Should().ThrowAsync<ValidationException>()
+      .WithMessage("Validation failed: \r\n -- Name: 'Name' must not be empty. Severity: Error");
 
     nextMock.Verify(m => m.Next(), Times.Never());
     nextMock.VerifyNoOtherCalls();
