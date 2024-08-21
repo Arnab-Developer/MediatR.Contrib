@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Moq;
 
 namespace NimblePros.MediatR.Contrib.Test.Behaviors;
 
@@ -11,6 +10,7 @@ public class CachingBehaviorTests
   public async Task Should_ReturnSuccess_GivenValidInputWithCacheMiss()
   {
     // Arrange
+    var nextMock = new Mock<INext>();
     var memoryCacheMock = new Mock<IMemoryCache>();
     var loggerMock = new Mock<ILogger<Mediator>>();
     var cacheEntryMock = new Mock<ICacheEntry>();
@@ -29,20 +29,28 @@ public class CachingBehaviorTests
       .Setup(m => m.CreateEntry(cacheKey))
       .Returns(cacheEntryMock.Object);
 
+    nextMock
+      .Setup(m => m.Next())
+      .ReturnsAsync(await Task.FromResult(true));
+
     // Act
-    var isSuccess = await cachingBehavior.Handle(command, Pipeline.Next, CancellationToken.None);
+    var isSuccess = await cachingBehavior.Handle(command, nextMock.Object.Next, CancellationToken.None);
 
     // Assert
     Assert.True(isSuccess);
 
     memoryCacheMock.Verify(m => m.TryGetValue(cacheKey, out result), Times.Once);
     memoryCacheMock.Verify(m => m.CreateEntry(cacheKey), Times.Once);
+
+    nextMock.Verify(m => m.Next(), Times.Once);
+    nextMock.VerifyNoOtherCalls();
   }
 
   [Fact]
   public async Task Should_ReturnSuccess_GivenValidInputWithCacheHit()
   {
     // Arrange
+    var nextMock = new Mock<INext>();
     var memoryCacheMock = new Mock<IMemoryCache>();
     var loggerMock = new Mock<ILogger<Mediator>>();
     var cacheEntryMock = new Mock<ICacheEntry>();
@@ -61,14 +69,21 @@ public class CachingBehaviorTests
       .Setup(m => m.CreateEntry(cacheKey))
       .Returns(cacheEntryMock.Object);
 
+    nextMock
+      .Setup(m => m.Next())
+      .ReturnsAsync(await Task.FromResult(true));
+
     // Act
-    var isSuccess = await cachingBehavior.Handle(command, Pipeline.Next, CancellationToken.None);
+    var isSuccess = await cachingBehavior.Handle(command, nextMock.Object.Next, CancellationToken.None);
 
     // Assert
     Assert.True(isSuccess);
 
     memoryCacheMock.Verify(m => m.TryGetValue(cacheKey, out result), Times.Once);
     memoryCacheMock.Verify(m => m.CreateEntry(cacheKey), Times.Never);
+
+    nextMock.Verify(m => m.Next(), Times.Never);
+    nextMock.VerifyNoOtherCalls();
   }
 
   [Fact]
@@ -76,6 +91,7 @@ public class CachingBehaviorTests
   {
 #nullable disable
     // Arrange
+    var nextMock = new Mock<INext>();
     var memoryCacheMock = new Mock<IMemoryCache>();
     var loggerMock = new Mock<ILogger<Mediator>>();
     var cacheEntryMock = new Mock<ICacheEntry>();
@@ -94,8 +110,12 @@ public class CachingBehaviorTests
       .Setup(m => m.CreateEntry(cacheKey))
       .Returns(cacheEntryMock.Object);
 
+    nextMock
+      .Setup(m => m.Next())
+      .ReturnsAsync(await Task.FromResult(true));
+
     // Act
-    Task<bool> testCode() => cachingBehavior.Handle(command, Pipeline.Next, CancellationToken.None);
+    Task<bool> testCode() => cachingBehavior.Handle(command, nextMock.Object.Next, CancellationToken.None);
 
     // Assert
     var exception = await Assert.ThrowsAsync<ArgumentNullException>(testCode);
@@ -105,6 +125,9 @@ public class CachingBehaviorTests
     memoryCacheMock.Verify(m => m.CreateEntry(cacheKey), Times.Never);
 
     memoryCacheMock.VerifyNoOtherCalls();
+
+    nextMock.Verify(m => m.Next(), Times.Never);
+    nextMock.VerifyNoOtherCalls();
 #nullable enable
   }
 }
