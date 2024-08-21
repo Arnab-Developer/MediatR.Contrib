@@ -37,12 +37,12 @@ public class CachingBehaviorTests
     var isSuccess = await cachingBehavior.Handle(command, nextMock.Object.Next, CancellationToken.None);
 
     // Assert
-    Assert.True(isSuccess);
+    isSuccess.Should().BeTrue();
 
-    memoryCacheMock.Verify(m => m.TryGetValue(cacheKey, out result), Times.Once);
-    memoryCacheMock.Verify(m => m.CreateEntry(cacheKey), Times.Once);
+    memoryCacheMock.Verify(m => m.TryGetValue(cacheKey, out result), Times.Once());
+    memoryCacheMock.Verify(m => m.CreateEntry(cacheKey), Times.Once());
 
-    nextMock.Verify(m => m.Next(), Times.Once);
+    nextMock.Verify(m => m.Next(), Times.Once());
     nextMock.VerifyNoOtherCalls();
   }
 
@@ -77,12 +77,12 @@ public class CachingBehaviorTests
     var isSuccess = await cachingBehavior.Handle(command, nextMock.Object.Next, CancellationToken.None);
 
     // Assert
-    Assert.True(isSuccess);
+    isSuccess.Should().BeTrue();
 
-    memoryCacheMock.Verify(m => m.TryGetValue(cacheKey, out result), Times.Once);
-    memoryCacheMock.Verify(m => m.CreateEntry(cacheKey), Times.Never);
+    memoryCacheMock.Verify(m => m.TryGetValue(cacheKey, out result), Times.Once());
+    memoryCacheMock.Verify(m => m.CreateEntry(cacheKey), Times.Never());
 
-    nextMock.Verify(m => m.Next(), Times.Never);
+    nextMock.Verify(m => m.Next(), Times.Never());
     nextMock.VerifyNoOtherCalls();
   }
 
@@ -119,14 +119,14 @@ public class CachingBehaviorTests
 
     // Assert
     var exception = await Assert.ThrowsAsync<ArgumentNullException>(testCode);
-    Assert.Equal("Value cannot be null. (Parameter 'request')", exception.Message);
+    exception.Message.Should().Be("Value cannot be null. (Parameter 'request')");
 
-    memoryCacheMock.Verify(m => m.TryGetValue(cacheKey, out result), Times.Never);
-    memoryCacheMock.Verify(m => m.CreateEntry(cacheKey), Times.Never);
+    memoryCacheMock.Verify(m => m.TryGetValue(cacheKey, out result), Times.Never());
+    memoryCacheMock.Verify(m => m.CreateEntry(cacheKey), Times.Never());
 
     memoryCacheMock.VerifyNoOtherCalls();
 
-    nextMock.Verify(m => m.Next(), Times.Never);
+    nextMock.Verify(m => m.Next(), Times.Never());
     nextMock.VerifyNoOtherCalls();
 #nullable enable
   }

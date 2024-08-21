@@ -22,9 +22,9 @@ public class LoggingBehaviorTests
       CancellationToken.None);
 
     // Assert
-    Assert.True(isSuccess);
+    isSuccess.Should().BeTrue();
 
-    nextMock.Verify(m => m.Next(), Times.Once);
+    nextMock.Verify(m => m.Next(), Times.Once());
     nextMock.VerifyNoOtherCalls();
   }
 
@@ -48,9 +48,9 @@ public class LoggingBehaviorTests
 
     // Assert
     var exception = await Assert.ThrowsAsync<ArgumentNullException>(testCode);
-    Assert.Equal("Value cannot be null. (Parameter 'request')", exception.Message);
+    exception.Message.Should().Be("Value cannot be null. (Parameter 'request')");
 
-    nextMock.Verify(m => m.Next(), Times.Never);
+    nextMock.Verify(m => m.Next(), Times.Never());
     nextMock.VerifyNoOtherCalls();
 #nullable enable
   }
