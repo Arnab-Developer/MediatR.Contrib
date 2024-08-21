@@ -1,3 +1,3 @@
 ﻿namespace NimblePros.MediatR.Contrib.Test.Behaviors.Helpers;
 
-internal class Value { }
+internal class Value;

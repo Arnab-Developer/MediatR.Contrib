@@ -1,4 +1,7 @@
-﻿namespace NimblePros.MediatR.Contrib.Test.Behaviors;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
+
+namespace NimblePros.MediatR.Contrib.Test.Behaviors;
 
 public class LoggingBehaviorTests
 {

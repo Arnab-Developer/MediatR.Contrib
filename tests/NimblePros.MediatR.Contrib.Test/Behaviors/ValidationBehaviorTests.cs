@@ -33,7 +33,10 @@ public class ValidationBehaviorTests
 
     // Assert
     var exception = await Assert.ThrowsAsync<ValidationException>(testCode);
-    Assert.Equal("Validation failed: \r\n -- Name: 'Name' must not be empty. Severity: Error", exception.Message);
+
+    Assert.Equal(
+      "Validation failed: \r\n -- Name: 'Name' must not be empty. Severity: Error", 
+      exception.Message);
   }
 
   [Fact]
@@ -70,5 +73,20 @@ public class ValidationBehaviorTests
     Assert.Single(result.ValidationErrors);
     Assert.Equal("'Name' must not be empty.", result.ValidationErrors[0].ErrorMessage);
     Assert.Equal("NimblePros.MediatR.Contrib.Test.Behaviors.Helpers.Value", result.ValueType.FullName);
+  }
+
+  [Fact]
+  public async Task Should_ReturnSuccess_GivenEmptyValidators()
+  {
+    // Arrange
+    var command = new TestCommand() { Name = "Test name" };
+    var validators = new List<IValidator<TestCommand>>();
+    var validationBehavior = new ValidationBehavior<TestCommand, bool>(validators);
+
+    // Act
+    var isSuccess = await validationBehavior.Handle(command, Pipeline.Next, CancellationToken.None);
+
+    // Assert
+    Assert.True(isSuccess);
   }
 }
