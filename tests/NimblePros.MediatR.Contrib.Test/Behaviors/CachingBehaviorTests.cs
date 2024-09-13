@@ -6,84 +6,94 @@ namespace NimblePros.MediatR.Contrib.Test.Behaviors;
 
 public class CachingBehaviorTests
 {
+  private readonly Mock<INext> _nextMock;
+  private readonly Mock<IMemoryCache> _memoryCacheMock;
+  private readonly Mock<ILogger<Mediator>> _loggerMock;
+  private readonly Mock<ICacheEntry> _cacheEntryMock;
+  private readonly CachingBehavior<TestCommand, bool> _cachingBehavior;
+
+  private TestCommand? _command;
+
+  private const string TestCacheKey =
+    "NimblePros.MediatR.Contrib.Test.Behaviors.Helpers.TestCommand";
+
+  private const string TestName = "Test name";
+
+  public CachingBehaviorTests()
+  {
+    _nextMock = new Mock<INext>();
+    _memoryCacheMock = new Mock<IMemoryCache>();
+    _loggerMock = new Mock<ILogger<Mediator>>();
+    _cacheEntryMock = new Mock<ICacheEntry>();
+
+    _cachingBehavior = new CachingBehavior<TestCommand, bool>(_memoryCacheMock.Object,
+      _loggerMock.Object);
+  }
+
   [Fact]
   public async Task Should_ReturnSuccess_GivenValidInputWithCacheMiss()
   {
     // Arrange
-    var nextMock = new Mock<INext>();
-    var memoryCacheMock = new Mock<IMemoryCache>();
-    var loggerMock = new Mock<ILogger<Mediator>>();
-    var cacheEntryMock = new Mock<ICacheEntry>();
-
-    var cachingBehavior = new CachingBehavior<TestCommand, bool>(memoryCacheMock.Object, loggerMock.Object);
-    var command = new TestCommand() { Name = "Test name" };
-
-    var cacheKey = "NimblePros.MediatR.Contrib.Test.Behaviors.Helpers.TestCommand";
+    _command = new TestCommand() { Name = TestName };
     object? result;
 
-    memoryCacheMock
-      .Setup(m => m.TryGetValue(cacheKey, out result))
+    _memoryCacheMock
+      .Setup(m => m.TryGetValue(TestCacheKey, out result))
       .Returns(false);
 
-    memoryCacheMock
-      .Setup(m => m.CreateEntry(cacheKey))
-      .Returns(cacheEntryMock.Object);
+    _memoryCacheMock
+      .Setup(m => m.CreateEntry(TestCacheKey))
+      .Returns(_cacheEntryMock.Object);
 
-    nextMock
+    _nextMock
       .Setup(m => m.Next())
       .ReturnsAsync(await Task.FromResult(true));
 
     // Act
-    var isSuccess = await cachingBehavior.Handle(command, nextMock.Object.Next, CancellationToken.None);
+    var isSuccess = await _cachingBehavior.Handle(_command, _nextMock.Object.Next,
+      CancellationToken.None);
 
     // Assert
     isSuccess.Should().BeTrue();
 
-    memoryCacheMock.Verify(m => m.TryGetValue(cacheKey, out result), Times.Once());
-    memoryCacheMock.Verify(m => m.CreateEntry(cacheKey), Times.Once());
+    _memoryCacheMock.Verify(m => m.TryGetValue(TestCacheKey, out result), Times.Once());
+    _memoryCacheMock.Verify(m => m.CreateEntry(TestCacheKey), Times.Once());
 
-    nextMock.Verify(m => m.Next(), Times.Once());
-    nextMock.VerifyNoOtherCalls();
+    _nextMock.Verify(m => m.Next(), Times.Once());
+    _nextMock.VerifyNoOtherCalls();
   }
 
   [Fact]
   public async Task Should_ReturnSuccess_GivenValidInputWithCacheHit()
   {
     // Arrange
-    var nextMock = new Mock<INext>();
-    var memoryCacheMock = new Mock<IMemoryCache>();
-    var loggerMock = new Mock<ILogger<Mediator>>();
-    var cacheEntryMock = new Mock<ICacheEntry>();
-
-    var cachingBehavior = new CachingBehavior<TestCommand, bool>(memoryCacheMock.Object, loggerMock.Object);
-    var command = new TestCommand() { Name = "Test name" };
-
-    var cacheKey = "NimblePros.MediatR.Contrib.Test.Behaviors.Helpers.TestCommand";
+    _command = new TestCommand() { Name = TestName };
     object? result = true;
 
-    memoryCacheMock
-      .Setup(m => m.TryGetValue(cacheKey, out result))
+    _memoryCacheMock
+      .Setup(m => m.TryGetValue(TestCacheKey, out result))
       .Returns(true);
 
-    memoryCacheMock
-      .Setup(m => m.CreateEntry(cacheKey))
-      .Returns(cacheEntryMock.Object);
+    _memoryCacheMock
+      .Setup(m => m.CreateEntry(TestCacheKey))
+      .Returns(_cacheEntryMock.Object);
 
-    nextMock
+    _nextMock
       .Setup(m => m.Next())
       .ReturnsAsync(await Task.FromResult(true));
 
     // Act
-    var isSuccess = await cachingBehavior.Handle(command, nextMock.Object.Next, CancellationToken.None);
+    var isSuccess = await _cachingBehavior.Handle(_command, _nextMock.Object.Next,
+      CancellationToken.None);
 
     // Assert
     isSuccess.Should().BeTrue();
 
-    memoryCacheMock.Verify(m => m.TryGetValue(cacheKey, out result), Times.Once());
-    memoryCacheMock.Verify(m => m.CreateEntry(cacheKey), Times.Never());
+    _memoryCacheMock.Verify(m => m.TryGetValue(TestCacheKey, out result), Times.Once());
+    _memoryCacheMock.Verify(m => m.CreateEntry(TestCacheKey), Times.Never());
 
-    nextMock.Verify(m => m.Next(), Times.Never());
-    nextMock.VerifyNoOtherCalls();
+    _nextMock.Verify(m => m.Next(), Times.Never());
+    _nextMock.VerifyNoOtherCalls();
   }
 
   [Fact]
@@ -91,45 +101,37 @@ public class CachingBehaviorTests
   {
 #nullable disable
     // Arrange
-    var nextMock = new Mock<INext>();
-    var memoryCacheMock = new Mock<IMemoryCache>();
-    var loggerMock = new Mock<ILogger<Mediator>>();
-    var cacheEntryMock = new Mock<ICacheEntry>();
-
-    var cachingBehavior = new CachingBehavior<TestCommand, bool>(memoryCacheMock.Object, loggerMock.Object);
-    TestCommand command = null;
-
-    var cacheKey = "NimblePros.MediatR.Contrib.Test.Behaviors.Helpers.TestCommand";
+    _command = null;
     object result;
 
-    memoryCacheMock
-      .Setup(m => m.TryGetValue(cacheKey, out result))
+    _memoryCacheMock
+      .Setup(m => m.TryGetValue(TestCacheKey, out result))
       .Returns(false);
 
-    memoryCacheMock
-      .Setup(m => m.CreateEntry(cacheKey))
-      .Returns(cacheEntryMock.Object);
+    _memoryCacheMock
+      .Setup(m => m.CreateEntry(TestCacheKey))
+      .Returns(_cacheEntryMock.Object);
 
-    nextMock
+    _nextMock
       .Setup(m => m.Next())
       .ReturnsAsync(await Task.FromResult(true));
 
     // Act
     var testCode = () =>
-      cachingBehavior.Handle(command, nextMock.Object.Next, CancellationToken.None);
+      _cachingBehavior.Handle(_command, _nextMock.Object.Next, CancellationToken.None);
 
     // Assert
     await testCode
       .Should().ThrowAsync<ArgumentNullException>()
       .WithMessage("Value cannot be null. (Parameter 'request')");
 
-    memoryCacheMock.Verify(m => m.TryGetValue(cacheKey, out result), Times.Never());
-    memoryCacheMock.Verify(m => m.CreateEntry(cacheKey), Times.Never());
+    _memoryCacheMock.Verify(m => m.TryGetValue(TestCacheKey, out result), Times.Never());
+    _memoryCacheMock.Verify(m => m.CreateEntry(TestCacheKey), Times.Never());
 
-    memoryCacheMock.VerifyNoOtherCalls();
+    _memoryCacheMock.VerifyNoOtherCalls();
 
-    nextMock.Verify(m => m.Next(), Times.Never());
-    nextMock.VerifyNoOtherCalls();
+    _nextMock.Verify(m => m.Next(), Times.Never());
+    _nextMock.VerifyNoOtherCalls();
 #nullable enable
   }
 }

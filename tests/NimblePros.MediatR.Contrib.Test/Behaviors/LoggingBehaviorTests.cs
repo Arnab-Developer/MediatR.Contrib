@@ -4,28 +4,40 @@ namespace NimblePros.MediatR.Contrib.Test.Behaviors;
 
 public class LoggingBehaviorTests
 {
+  private readonly Mock<INext> _nextMock;
+  private readonly Mock<ILogger<TestCommand>> _loggerMock;
+  private readonly LoggingBehavior<TestCommand, bool> _loggingBehavior;
+
+  private TestCommand? _command;
+
+  private const string TestName = "Test name";
+
+  public LoggingBehaviorTests()
+  {
+    _nextMock = new Mock<INext>();
+    _loggerMock = new Mock<ILogger<TestCommand>>();
+    _loggingBehavior = new LoggingBehavior<TestCommand, bool>(_loggerMock.Object);
+  }
+
   [Fact]
   public async Task Should_ReturnSuccess_GivenValidInput()
   {
     // Arrange
-    var nextMock = new Mock<INext>();
-    var loggerMock = new Mock<ILogger<TestCommand>>();
-    var command = new TestCommand() { Name = "Test name" };
-    var loggingBehavior = new LoggingBehavior<TestCommand, bool>(loggerMock.Object);
+    _command = new TestCommand() { Name = TestName };
 
-    nextMock
+    _nextMock
       .Setup(m => m.Next())
       .ReturnsAsync(await Task.FromResult(true));
 
     // Act
-    var isSuccess = await loggingBehavior.Handle(command, nextMock.Object.Next,
+    var isSuccess = await _loggingBehavior.Handle(_command, _nextMock.Object.Next,
       CancellationToken.None);
 
     // Assert
     isSuccess.Should().BeTrue();
 
-    nextMock.Verify(m => m.Next(), Times.Once());
-    nextMock.VerifyNoOtherCalls();
+    _nextMock.Verify(m => m.Next(), Times.Once());
+    _nextMock.VerifyNoOtherCalls();
   }
 
   [Fact]
@@ -33,26 +45,23 @@ public class LoggingBehaviorTests
   {
 #nullable disable
     // Arrange
-    var nextMock = new Mock<INext>();
-    var loggerMock = new Mock<ILogger<TestCommand>>();
-    var loggingBehavior = new LoggingBehavior<TestCommand, bool>(loggerMock.Object);
-    TestCommand command = null;
+    _command = null;
 
-    nextMock
+    _nextMock
       .Setup(m => m.Next())
       .ReturnsAsync(await Task.FromResult(true));
 
     // Act
     var testCode = () =>
-      loggingBehavior.Handle(command, nextMock.Object.Next, CancellationToken.None);
+      _loggingBehavior.Handle(_command, _nextMock.Object.Next, CancellationToken.None);
 
     // Assert
     await testCode
       .Should().ThrowAsync<ArgumentNullException>()
       .WithMessage("Value cannot be null. (Parameter 'request')");
 
-    nextMock.Verify(m => m.Next(), Times.Never());
-    nextMock.VerifyNoOtherCalls();
+    _nextMock.Verify(m => m.Next(), Times.Never());
+    _nextMock.VerifyNoOtherCalls();
 #nullable enable
   }
 }
