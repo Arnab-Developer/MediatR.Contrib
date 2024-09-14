@@ -10,14 +10,9 @@ public class CachingBehaviorTests
   private readonly Mock<IMemoryCache> _memoryCacheMock;
   private readonly Mock<ILogger<Mediator>> _loggerMock;
   private readonly Mock<ICacheEntry> _cacheEntryMock;
-  private readonly CachingBehavior<TestCommand, bool> _cachingBehavior;
+  private readonly CachingBehavior<ICommand<bool>, bool> _cachingBehavior;
 
-  private TestCommand? _command;
-
-  private const string TestCacheKey =
-    "NimblePros.MediatR.Contrib.Test.Behaviors.Helpers.TestCommand";
-
-  private const string TestName = "Test name";
+  private ICommand<bool>? _command;
 
   public CachingBehaviorTests()
   {
@@ -26,7 +21,7 @@ public class CachingBehaviorTests
     _loggerMock = new Mock<ILogger<Mediator>>();
     _cacheEntryMock = new Mock<ICacheEntry>();
 
-    _cachingBehavior = new CachingBehavior<TestCommand, bool>(_memoryCacheMock.Object,
+    _cachingBehavior = new CachingBehavior<ICommand<bool>, bool>(_memoryCacheMock.Object,
       _loggerMock.Object);
   }
 
@@ -34,15 +29,16 @@ public class CachingBehaviorTests
   public async Task Should_ReturnSuccess_GivenValidInputWithCacheMiss()
   {
     // Arrange
-    _command = new TestCommand() { Name = TestName };
+    _command = Mock.Of<ICommand<bool>>();
+    var testCacheKey = _command.GetType().FullName ?? string.Empty;
     object? result;
 
     _memoryCacheMock
-      .Setup(m => m.TryGetValue(TestCacheKey, out result))
+      .Setup(m => m.TryGetValue(testCacheKey, out result))
       .Returns(false);
 
     _memoryCacheMock
-      .Setup(m => m.CreateEntry(TestCacheKey))
+      .Setup(m => m.CreateEntry(testCacheKey))
       .Returns(_cacheEntryMock.Object);
 
     _nextMock
@@ -56,8 +52,8 @@ public class CachingBehaviorTests
     // Assert
     isSuccess.Should().BeTrue();
 
-    _memoryCacheMock.Verify(m => m.TryGetValue(TestCacheKey, out result), Times.Once());
-    _memoryCacheMock.Verify(m => m.CreateEntry(TestCacheKey), Times.Once());
+    _memoryCacheMock.Verify(m => m.TryGetValue(testCacheKey, out result), Times.Once());
+    _memoryCacheMock.Verify(m => m.CreateEntry(testCacheKey), Times.Once());
 
     _nextMock.Verify(m => m.Next(), Times.Once());
     _nextMock.VerifyNoOtherCalls();
@@ -67,15 +63,16 @@ public class CachingBehaviorTests
   public async Task Should_ReturnSuccess_GivenValidInputWithCacheHit()
   {
     // Arrange
-    _command = new TestCommand() { Name = TestName };
+    _command = Mock.Of<ICommand<bool>>();
+    var testCacheKey = _command.GetType().FullName ?? string.Empty;
     object? result = true;
 
     _memoryCacheMock
-      .Setup(m => m.TryGetValue(TestCacheKey, out result))
+      .Setup(m => m.TryGetValue(testCacheKey, out result))
       .Returns(true);
 
     _memoryCacheMock
-      .Setup(m => m.CreateEntry(TestCacheKey))
+      .Setup(m => m.CreateEntry(testCacheKey))
       .Returns(_cacheEntryMock.Object);
 
     _nextMock
@@ -89,8 +86,8 @@ public class CachingBehaviorTests
     // Assert
     isSuccess.Should().BeTrue();
 
-    _memoryCacheMock.Verify(m => m.TryGetValue(TestCacheKey, out result), Times.Once());
-    _memoryCacheMock.Verify(m => m.CreateEntry(TestCacheKey), Times.Never());
+    _memoryCacheMock.Verify(m => m.TryGetValue(testCacheKey, out result), Times.Once());
+    _memoryCacheMock.Verify(m => m.CreateEntry(testCacheKey), Times.Never());
 
     _nextMock.Verify(m => m.Next(), Times.Never());
     _nextMock.VerifyNoOtherCalls();
@@ -102,14 +99,15 @@ public class CachingBehaviorTests
 #nullable disable
     // Arrange
     _command = null;
+    var testCacheKey = It.IsAny<string>();
     object result;
 
     _memoryCacheMock
-      .Setup(m => m.TryGetValue(TestCacheKey, out result))
+      .Setup(m => m.TryGetValue(testCacheKey, out result))
       .Returns(false);
 
     _memoryCacheMock
-      .Setup(m => m.CreateEntry(TestCacheKey))
+      .Setup(m => m.CreateEntry(testCacheKey))
       .Returns(_cacheEntryMock.Object);
 
     _nextMock
@@ -125,8 +123,8 @@ public class CachingBehaviorTests
       .Should().ThrowAsync<ArgumentNullException>()
       .WithMessage("Value cannot be null. (Parameter 'request')");
 
-    _memoryCacheMock.Verify(m => m.TryGetValue(TestCacheKey, out result), Times.Never());
-    _memoryCacheMock.Verify(m => m.CreateEntry(TestCacheKey), Times.Never());
+    _memoryCacheMock.Verify(m => m.TryGetValue(testCacheKey, out result), Times.Never());
+    _memoryCacheMock.Verify(m => m.CreateEntry(testCacheKey), Times.Never());
 
     _memoryCacheMock.VerifyNoOtherCalls();
 

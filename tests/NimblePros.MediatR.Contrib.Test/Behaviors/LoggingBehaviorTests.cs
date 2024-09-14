@@ -5,25 +5,23 @@ namespace NimblePros.MediatR.Contrib.Test.Behaviors;
 public class LoggingBehaviorTests
 {
   private readonly Mock<INext> _nextMock;
-  private readonly Mock<ILogger<TestCommand>> _loggerMock;
-  private readonly LoggingBehavior<TestCommand, bool> _loggingBehavior;
+  private readonly Mock<ILogger<ICommand<bool>>> _loggerMock;
+  private readonly LoggingBehavior<ICommand<bool>, bool> _loggingBehavior;
 
-  private TestCommand? _command;
-
-  private const string TestName = "Test name";
+  private ICommand<bool>? _command;
 
   public LoggingBehaviorTests()
   {
     _nextMock = new Mock<INext>();
-    _loggerMock = new Mock<ILogger<TestCommand>>();
-    _loggingBehavior = new LoggingBehavior<TestCommand, bool>(_loggerMock.Object);
+    _loggerMock = new Mock<ILogger<ICommand<bool>>>();
+    _loggingBehavior = new LoggingBehavior<ICommand<bool>, bool>(_loggerMock.Object);
   }
 
   [Fact]
   public async Task Should_ReturnSuccess_GivenValidInput()
   {
     // Arrange
-    _command = new TestCommand() { Name = TestName };
+    _command = Mock.Of<ICommand<bool>>();
 
     _nextMock
       .Setup(m => m.Next())
