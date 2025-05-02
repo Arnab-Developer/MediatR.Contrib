@@ -1,62 +1,72 @@
 ﻿using Ardalis.Result;
 using FluentValidation;
+using FluentValidation.Results;
 
 namespace NimblePros.MediatR.Contrib.Test.Behaviors;
 
 public class ValidationBehaviorTests
 {
-  private readonly TestCommandValidator _testCommandValidator;
-  private readonly List<IValidator<TestCommand>> _testCommandValidators;
-  private readonly ValidationBehavior<TestCommand, bool> _testCommandValidationBehavior;
-  private readonly TestCommand _testCommand;
+  private readonly Mock<IValidator<ICommand<bool>>> _testCommandValidatorMock;
+  private readonly List<IValidator<ICommand<bool>>> _testCommandValidators;
+  private readonly ValidationBehavior<ICommand<bool>, bool> _testCommandValidationBehavior;
+  private readonly Mock<ICommand<bool>> _testCommandMock;
 
-  private readonly ResultTestCommandValidator _resultTestCommandValidator;
-  private readonly List<IValidator<ResultTestCommand>> _resultTestCommandValidators;
-  private readonly ValidationBehavior<ResultTestCommand, Result> _resultTestCommandValidationBehavior;
-  private readonly ResultTestCommand _resultTestcommand;
+  private readonly Mock<IValidator<ICommand<Result>>> _resultTestCommandValidatorMock;
+  private readonly List<IValidator<ICommand<Result>>> _resultTestCommandValidators;
+  private readonly ValidationBehavior<ICommand<Result>, Result> _resultTestCommandValidationBehavior;
+  private readonly Mock<ICommand<Result>> _resultTestcommandMock;
 
-  private readonly GenericResultTestCommandValidator _genericResultTestCommandValidator;
-  private readonly List<IValidator<GenericResultTestCommand>> _genericResultTestCommandValidators;
-  private readonly ValidationBehavior<GenericResultTestCommand, Result<Value>> _genericResultTestCommandValidationBehavior;
-  private readonly GenericResultTestCommand _genericResultTestcommand;
+  private readonly Mock<IValidator<ICommand<Result<Value>>>> _genericResultTestCommandValidatorMock;
+  private readonly List<IValidator<ICommand<Result<Value>>>> _genericResultTestCommandValidators;
+  private readonly ValidationBehavior<ICommand<Result<Value>>, Result<Value>> _genericResultTestCommandValidationBehavior;
+  private readonly Mock<ICommand<Result<Value>>> _genericResultTestcommandMock;
+
+  private readonly ValidationResult _failedValidationResult;
 
   private readonly Mock<INext> _nextMock;
 
-  private const string TestName = "Test name";
-
   public ValidationBehaviorTests()
   {
-    _testCommandValidator = new TestCommandValidator();
-    _testCommandValidators = new List<IValidator<TestCommand>>();
-    _testCommandValidationBehavior = new ValidationBehavior<TestCommand, bool>(_testCommandValidators);
-    _testCommand = new TestCommand();
+    _testCommandValidatorMock = new Mock<IValidator<ICommand<bool>>>();
+    _testCommandValidators = new List<IValidator<ICommand<bool>>>();
+    _testCommandValidationBehavior = new ValidationBehavior<ICommand<bool>, bool>(_testCommandValidators);
+    _testCommandMock = new Mock<ICommand<bool>>();
 
-    _resultTestCommandValidator = new ResultTestCommandValidator();
-    _resultTestCommandValidators = new List<IValidator<ResultTestCommand>>();
-    _resultTestCommandValidationBehavior = new ValidationBehavior<ResultTestCommand, Result>(_resultTestCommandValidators);
-    _resultTestcommand = new ResultTestCommand();
+    _resultTestCommandValidatorMock = new Mock<IValidator<ICommand<Result>>>();
+    _resultTestCommandValidators = new List<IValidator<ICommand<Result>>>();
+    _resultTestCommandValidationBehavior = new ValidationBehavior<ICommand<Result>, Result>(_resultTestCommandValidators);
+    _resultTestcommandMock = new Mock<ICommand<Result>>();
 
-    _genericResultTestCommandValidator = new GenericResultTestCommandValidator();
-    _genericResultTestCommandValidators = new List<IValidator<GenericResultTestCommand>>();
-    _genericResultTestCommandValidationBehavior = new ValidationBehavior<GenericResultTestCommand, Result<Value>>(_genericResultTestCommandValidators);
-    _genericResultTestcommand = new GenericResultTestCommand();
+    _genericResultTestCommandValidatorMock = new Mock<IValidator<ICommand<Result<Value>>>>();
+    _genericResultTestCommandValidators = new List<IValidator<ICommand<Result<Value>>>>();
+    _genericResultTestCommandValidationBehavior = new ValidationBehavior<ICommand<Result<Value>>, Result<Value>>(_genericResultTestCommandValidators);
+    _genericResultTestcommandMock = new Mock<ICommand<Result<Value>>>();
+
+    _failedValidationResult = new ValidationResult(
+      new List<ValidationFailure>()
+      {
+        new ValidationFailure("Name", "'Name' must not be empty.")
+      });
 
     _nextMock = new Mock<INext>();
   }
 
   [Fact]
-  public async Task Should_ReturnSuccess_GivenValidInput()
+  public async Task Should_ReturnSuccess_GivenSuccessValidationResult()
   {
     // Arrange
-    _testCommandValidators.Add(_testCommandValidator);
-    _testCommand.Name = TestName;
+    _testCommandValidators.Add(_testCommandValidatorMock.Object);
+
+    _testCommandValidatorMock
+      .Setup(m => m.ValidateAsync(It.IsAny<IValidationContext>(), It.IsAny<CancellationToken>()))
+      .ReturnsAsync(await Task.FromResult(new ValidationResult()));
 
     _nextMock
       .Setup(m => m.Next())
       .ReturnsAsync(await Task.FromResult(true));
 
     // Act
-    var isSuccess = await _testCommandValidationBehavior.Handle(_testCommand, _nextMock.Object.Next,
+    var isSuccess = await _testCommandValidationBehavior.Handle(_testCommandMock.Object, _nextMock.Object.Next,
       CancellationToken.None);
 
     // Assert
@@ -64,14 +74,22 @@ public class ValidationBehaviorTests
 
     _nextMock.Verify(m => m.Next(), Times.Once());
     _nextMock.VerifyNoOtherCalls();
+
+    _testCommandValidatorMock.Verify(m =>
+      m.ValidateAsync(It.IsAny<IValidationContext>(), It.IsAny<CancellationToken>()), Times.Once());
+
+    _testCommandValidatorMock.VerifyNoOtherCalls();
   }
 
   [Fact]
-  public async Task Should_ThrowValidationException_GivenEmptyStringInput()
+  public async Task Should_ThrowValidationException_GivenFailedValidationResultWithBoolValidator()
   {
     // Arrange
-    _testCommandValidators.Add(_testCommandValidator);
-    _testCommand.Name = string.Empty;
+    _testCommandValidators.Add(_testCommandValidatorMock.Object);
+
+    _testCommandValidatorMock
+      .Setup(m => m.ValidateAsync(It.IsAny<IValidationContext>(), It.IsAny<CancellationToken>()))
+      .ReturnsAsync(await Task.FromResult(_failedValidationResult));
 
     _nextMock
       .Setup(m => m.Next())
@@ -79,7 +97,7 @@ public class ValidationBehaviorTests
 
     // Act
     var testCode = () =>
-      _testCommandValidationBehavior.Handle(_testCommand, _nextMock.Object.Next, CancellationToken.None);
+      _testCommandValidationBehavior.Handle(_testCommandMock.Object, _nextMock.Object.Next, CancellationToken.None);
 
     // Assert
     await testCode
@@ -88,14 +106,22 @@ public class ValidationBehaviorTests
 
     _nextMock.Verify(m => m.Next(), Times.Never());
     _nextMock.VerifyNoOtherCalls();
+
+    _testCommandValidatorMock.Verify(m =>
+      m.ValidateAsync(It.IsAny<IValidationContext>(), It.IsAny<CancellationToken>()), Times.Once());
+
+    _testCommandValidatorMock.VerifyNoOtherCalls();
   }
 
   [Fact]
-  public async Task Should_ReturnInvalidResult_GivenEmptyStringInput()
+  public async Task Should_ReturnInvalidResult_GivenFailedValidationResultWithResultValidator()
   {
     // Arrange
-    _resultTestCommandValidators.Add(_resultTestCommandValidator);
-    _resultTestcommand.Name = string.Empty;
+    _resultTestCommandValidators.Add(_resultTestCommandValidatorMock.Object);
+
+    _resultTestCommandValidatorMock
+      .Setup(m => m.ValidateAsync(It.IsAny<IValidationContext>(), It.IsAny<CancellationToken>()))
+      .ReturnsAsync(await Task.FromResult(_failedValidationResult));
 
     _nextMock
       .Setup(m => m.ResultNext())
@@ -103,7 +129,7 @@ public class ValidationBehaviorTests
 
     // Act
     var result = await _resultTestCommandValidationBehavior.Handle(
-      _resultTestcommand, _nextMock.Object.ResultNext, CancellationToken.None);
+      _resultTestcommandMock.Object, _nextMock.Object.ResultNext, CancellationToken.None);
 
     // Assert
     result.IsSuccess.Should().BeFalse();
@@ -113,14 +139,22 @@ public class ValidationBehaviorTests
 
     _nextMock.Verify(m => m.ResultNext(), Times.Never());
     _nextMock.VerifyNoOtherCalls();
+
+    _resultTestCommandValidatorMock.Verify(m =>
+      m.ValidateAsync(It.IsAny<IValidationContext>(), It.IsAny<CancellationToken>()), Times.Once());
+
+    _resultTestCommandValidatorMock.VerifyNoOtherCalls();
   }
 
   [Fact]
-  public async Task Should_ReturnInvalidGenericResult_GivenEmptyStringInput()
+  public async Task Should_ReturnInvalidGenericResult_GivenFailedValidationResultWithGenericResultValidator()
   {
     // Arrange
-    _genericResultTestCommandValidators.Add(_genericResultTestCommandValidator);
-    _genericResultTestcommand.Name = string.Empty;
+    _genericResultTestCommandValidators.Add(_genericResultTestCommandValidatorMock.Object);
+
+    _genericResultTestCommandValidatorMock
+      .Setup(m => m.ValidateAsync(It.IsAny<IValidationContext>(), It.IsAny<CancellationToken>()))
+      .ReturnsAsync(await Task.FromResult(_failedValidationResult));
 
     _nextMock
       .Setup(m => m.GenericResultNext())
@@ -128,7 +162,7 @@ public class ValidationBehaviorTests
 
     // Act
     var result = await _genericResultTestCommandValidationBehavior.Handle(
-      _genericResultTestcommand, _nextMock.Object.GenericResultNext, CancellationToken.None);
+      _genericResultTestcommandMock.Object, _nextMock.Object.GenericResultNext, CancellationToken.None);
 
     // Assert
     result.IsSuccess.Should().BeFalse();
@@ -138,20 +172,23 @@ public class ValidationBehaviorTests
 
     _nextMock.Verify(m => m.GenericResultNext(), Times.Never());
     _nextMock.VerifyNoOtherCalls();
+
+    _genericResultTestCommandValidatorMock.Verify(m =>
+      m.ValidateAsync(It.IsAny<IValidationContext>(), It.IsAny<CancellationToken>()), Times.Once());
+
+    _genericResultTestCommandValidatorMock.VerifyNoOtherCalls();
   }
 
   [Fact]
   public async Task Should_ReturnSuccess_GivenEmptyValidators()
   {
     // Arrange
-    _testCommand.Name = TestName;
-
     _nextMock
       .Setup(m => m.Next())
       .ReturnsAsync(await Task.FromResult(true));
 
     // Act
-    var isSuccess = await _testCommandValidationBehavior.Handle(_testCommand, _nextMock.Object.Next,
+    var isSuccess = await _testCommandValidationBehavior.Handle(_testCommandMock.Object, _nextMock.Object.Next,
       CancellationToken.None);
 
     // Assert
